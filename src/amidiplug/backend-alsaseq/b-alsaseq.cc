@@ -63,13 +63,13 @@ void backend_init ()
 	if ((res = snd_seq_open(&sc.seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0)))
 	{
 		sc.seq_handle = NULL;
-		AUDWARN("Could not open alsa sequencer");
+		AUDWARN("Could not open alsa sequencer\n");
 		// TODO ERROR
 	}
 	if ((res = snd_midi_event_new(1024 * 1024, &sc.event_parser)))
 	{
 		sc.event_parser = NULL;
-		AUDWARN("Could not initialize alsa midi event parser");
+		AUDWARN("Could not initialize alsa midi event parser\n");
 		// TODO ERROR
 	}
 
@@ -78,7 +78,7 @@ void backend_init ()
 	sc.dest_port = 0;
 	if ((res = snd_seq_connect_to(sc.seq_handle, snd_seq_client_id(sc.seq_handle), sc.dest_client, sc.dest_port)))
 	{
-		AUDWARN("Could not connect to alsa seq device %d:%d", sc.dest_client, sc.dest_port);
+		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client, sc.dest_port);
 	}
 }
 
@@ -90,7 +90,7 @@ void backend_cleanup ()
 		return;
 	if ((res = snd_seq_close(sc.seq_handle)))
 	{
-		AUDWARN("Could not close alsa sequencer");
+		AUDWARN("Could not close alsa sequencer\n");
 		// TODO ERROR
 	}
 	if (sc.event_parser)
