@@ -77,7 +77,7 @@ void backend_init ()
 		AUDWARN("Could not open alsa sequencer\n");
 		// TODO ERROR
 	}
-	if ((res = snd_midi_event_new(1024 * 1024, &sc.event_parser)))
+	if ((res = snd_midi_event_new(1024, &sc.event_parser)))
 	{
 		sc.event_parser = NULL;
 		AUDWARN("Could not initialize alsa midi event parser\n");
