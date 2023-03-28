@@ -87,7 +87,7 @@ void backend_init ()
 	snd_seq_set_client_name(sc.seq_handle, "audacious");
 	sc.client_port = snd_seq_create_simple_port(sc.seq_handle,
 	                                            "midi_out",
-	                                            0, //SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+	                                            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
 	                                            SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
 
 	// TODO make configurable:
