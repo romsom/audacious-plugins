@@ -172,12 +172,13 @@ void seq_event_allnoteoff (int unused)
 void backend_generate_audio (void * buf, int bufsize)
 {
 	// fluid_synth_write_s16 (sc.synth, bufsize / 4, buf, 0, 2, buf, 1, 2);
+	memset(buf, 0, bufsize);
 }
 
 
 void backend_audio_info (int * channels, int * bitdepth, int * samplerate)
 {
-    *channels = 0;
+    *channels = 2;
     *bitdepth = 16; /* always 16 bit, we use fluid_synth_write_s16() */
     *samplerate = aud_get_int ("amidiplug", "fsyn_synth_samplerate");
 }
