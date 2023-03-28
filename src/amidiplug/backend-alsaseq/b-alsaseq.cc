@@ -47,22 +47,23 @@ typedef struct
 	int dest_port;
 } sequencer_client_t;
 
-#define HANDLE_EVENT(event, length) \
+#define CHK(err, fun, params...) \
+	err = fun(params); \
+	if (err) \
+		AUDWARN(#fun ": %s\n", snd_strerror(err));
+
+#define HANDLE_EVENT(err, event, length)	  \
 	do { \
-    int _res; \
 	if (!sc.seq_handle) \
 		return; \
 	snd_midi_event_init(sc.event_parser); \
-	if ((_res = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
+	if ((err = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
 		snd_seq_ev_set_direct(&sc.event); \
-		if ((_res = snd_seq_event_output(sc.seq_handle, &sc.event))) \
-			AUDWARN("Could not send event to alsa: %s\n", snd_strerror(_res)); \
-		if ((_res = snd_seq_drain_output(sc.seq_handle))) \
-			AUDWARN("Could not drain alsa seq buffer: %s\n", snd_strerror(_res)); \
-		if ((_res = snd_seq_sync_output_queue(sc.seq_handle))) \
-			AUDWARN("Could not sync alsa seq output queue: %s\n", snd_strerror(_res)); \
+		CHK(err, snd_seq_event_output, sc.seq_handle, &sc.event); \
+		CHK(err, snd_seq_drain_output, sc.seq_handle); \
+		CHK(err, snd_seq_sync_output_queue, sc.seq_handle); \
 	} else \
-		AUDWARN("Could not encode midi message: %s\n", snd_strerror(_res)); \
+		AUDWARN("Could not encode midi message: %s\n", snd_strerror(err)); \
 	exit(0); \
 	} while (0)
 
@@ -130,13 +131,15 @@ void backend_reset ()
 
 void seq_event_noteon (midievent_t * event)
 {
-	HANDLE_EVENT(event, 3);
+	int err;
+	HANDLE_EVENT(err, event, 3);
 }
 
 
 void seq_event_noteoff (midievent_t * event)
 {
-	HANDLE_EVENT(event, 2);
+	int err;
+	HANDLE_EVENT(err, event, 2);
 }
 
 
@@ -149,13 +152,15 @@ void seq_event_keypress (midievent_t * event)
 
 void seq_event_controller (midievent_t * event)
 {
-	HANDLE_EVENT(event, 3);
+	int err;
+	HANDLE_EVENT(err, event, 3);
 }
 
 
 void seq_event_pgmchange (midievent_t * event)
 {
-	HANDLE_EVENT(event, 2);
+	int err;
+	HANDLE_EVENT(err, event, 2);
 }
 
 
