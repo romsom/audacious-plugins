@@ -19,6 +19,7 @@
  */
 #include <alsa/asoundlib.h>
 
+#include <alsa/error.h>
 #include <alsa/seq.h>
 #include <alsa/seq_event.h>
 #include <alsa/seq_midi_event.h>
@@ -48,13 +49,19 @@ typedef struct
 
 #define HANDLE_EVENT(event, length) \
 	do { \
+    int _res; \
 	if (!sc.seq_handle) \
 		return; \
 	snd_midi_event_init(sc.event_parser); \
-	if (snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0) \
-		snd_seq_event_output(sc.seq_handle, &sc.event); \
-	else \
-		AUDWARN("Could not encode midi message\n"); \
+	if ((_res = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
+		if ((_res = snd_seq_event_output(sc.seq_handle, &sc.event))) \
+			AUDWARN("Could not send event to alsa: %s\n", snd_strerror(_res)); \
+		if ((_res = snd_seq_drain_output(sc.seq_handle))) \
+			AUDWARN("Could not drain alsa seq buffer: %s\n", snd_strerror(_res)); \
+		if ((_res = snd_seq_sync_output_queue(sc.seq_handle))) \
+			AUDWARN("Could not sync alsa seq output queue: %s\n", snd_strerror(_res)); \
+	} else \
+		AUDWARN("Could not encode midi message: %s\n", snd_strerror(_res)); \
 	} while (0)
 
 /* sequencer instance */
