@@ -54,6 +54,7 @@ typedef struct
 		return; \
 	snd_midi_event_init(sc.event_parser); \
 	if ((_res = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
+		snd_seq_ev_set_direct(&sc.event); \
 		if ((_res = snd_seq_event_output(sc.seq_handle, &sc.event))) \
 			AUDWARN("Could not send event to alsa: %s\n", snd_strerror(_res)); \
 		if ((_res = snd_seq_drain_output(sc.seq_handle))) \
@@ -90,7 +91,7 @@ void backend_init ()
 	                                            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
 	                                            SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
 
-	// TODO make configurable:
+	// TODO make configurable using snd_seq_parse_address()
 	sc.dest_client = 36;
 	sc.dest_port = 0;
 	AUDWARN("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
