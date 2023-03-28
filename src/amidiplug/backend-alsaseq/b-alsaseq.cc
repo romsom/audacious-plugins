@@ -40,6 +40,8 @@ typedef struct
 	int out_port;
 	snd_seq_event_t event;
 	snd_midi_event_t *event_parser;
+	int dest_client;
+	int dest_port;
 } sequencer_client_t;
 
 #define HANDLE_EVENT(event, length) \
@@ -71,6 +73,11 @@ void backend_init ()
 		AUDWARN("Could not initialize alsa midi event parser");
 		// TODO ERROR
 	}
+
+	// TODO make configurable:
+	sc.dest_client = 36;
+	sc.dest_port = 0;
+	snd_seq_connect_to(sc.seq_handle, snd_seq_client_id(sc.seq_handle), sc.dest_client, sc.dest_port);
 }
 
 
