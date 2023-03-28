@@ -177,7 +177,7 @@ void backend_generate_audio (void * buf, int bufsize)
 
 void backend_audio_info (int * channels, int * bitdepth, int * samplerate)
 {
-    *channels = 2;
+    *channels = 0;
     *bitdepth = 16; /* always 16 bit, we use fluid_synth_write_s16() */
     *samplerate = aud_get_int ("amidiplug", "fsyn_synth_samplerate");
 }
