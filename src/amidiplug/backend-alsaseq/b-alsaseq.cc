@@ -22,6 +22,7 @@
 #include <alsa/seq.h>
 #include <alsa/seq_event.h>
 #include <alsa/seq_midi_event.h>
+#include <alsa/seqmid.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -52,6 +53,8 @@ typedef struct
 	snd_midi_event_init(sc.event_parser); \
 	if (snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0) \
 		snd_seq_event_output(sc.seq_handle, &sc.event); \
+	else \
+		AUDWARN("Could not encode midi message\n"); \
 	} while (0)
 
 /* sequencer instance */
@@ -194,7 +197,6 @@ void seq_event_allnoteoff (int unused)
 
 void backend_generate_audio (void * buf, int bufsize)
 {
-	// fluid_synth_write_s16 (sc.synth, bufsize / 4, buf, 0, 2, buf, 1, 2);
 	memset(buf, 0, bufsize);
 }
 
