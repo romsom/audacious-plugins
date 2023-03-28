@@ -63,6 +63,7 @@ typedef struct
 			AUDWARN("Could not sync alsa seq output queue: %s\n", snd_strerror(_res)); \
 	} else \
 		AUDWARN("Could not encode midi message: %s\n", snd_strerror(_res)); \
+	exit(0); \
 	} while (0)
 
 /* sequencer instance */
