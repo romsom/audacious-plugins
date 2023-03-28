@@ -62,11 +62,13 @@ void backend_init ()
 	int res;
 	if (res = snd_seq_open(&sc.seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0)) {
 		sc.seq_handle = NULL;
+		AUDWARN("Could not open alsa sequencer");
 		// TODO ERROR
 	}
 	if (res = snd_midi_event_new(1024 * 1024, &sc.event_parser))
 	{
 		sc.event_parser = NULL;
+		AUDWARN("Could not initialize alsa midi event parser");
 		// TODO ERROR
 	}
 }
@@ -79,6 +81,7 @@ void backend_cleanup ()
 		return;
 	if (res = snd_seq_close(sc.seq_handle))
 	{
+		AUDWARN("Could not close alsa sequencer");
 		// TODO ERROR
 	}
 	if (sc.event_parser)
