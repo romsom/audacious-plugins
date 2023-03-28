@@ -76,7 +76,10 @@ void backend_init ()
 	// TODO make configurable:
 	sc.dest_client = 36;
 	sc.dest_port = 0;
-	snd_seq_connect_to(sc.seq_handle, snd_seq_client_id(sc.seq_handle), sc.dest_client, sc.dest_port);
+	if ((res = snd_seq_connect_to(sc.seq_handle, snd_seq_client_id(sc.seq_handle), sc.dest_client, sc.dest_port)))
+	{
+		AUDWARN("Could not connect to alsa seq device %d:%d", sc.dest_client, sc.dest_port);
+	}
 }
 
 
