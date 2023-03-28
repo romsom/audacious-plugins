@@ -57,17 +57,16 @@ typedef struct
 static sequencer_client_t sc;
 /* options */
 
-static void i_soundfont_load ();
-
 void backend_init ()
 {
 	int res;
-	if (res = snd_seq_open(&sc.seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0)) {
+	if ((res = snd_seq_open(&sc.seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0)))
+	{
 		sc.seq_handle = NULL;
 		AUDWARN("Could not open alsa sequencer");
 		// TODO ERROR
 	}
-	if (res = snd_midi_event_new(1024 * 1024, &sc.event_parser))
+	if ((res = snd_midi_event_new(1024 * 1024, &sc.event_parser)))
 	{
 		sc.event_parser = NULL;
 		AUDWARN("Could not initialize alsa midi event parser");
@@ -86,7 +85,7 @@ void backend_cleanup ()
 	int res;
 	if (!sc.seq_handle)
 		return;
-	if (res = snd_seq_close(sc.seq_handle))
+	if ((res = snd_seq_close(sc.seq_handle)))
 	{
 		AUDWARN("Could not close alsa sequencer");
 		// TODO ERROR
