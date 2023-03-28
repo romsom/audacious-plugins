@@ -40,6 +40,7 @@ typedef struct
 	int out_port;
 	snd_seq_event_t event;
 	snd_midi_event_t *event_parser;
+	int client_port;
 	int dest_client;
 	int dest_port;
 } sequencer_client_t;
@@ -73,11 +74,17 @@ void backend_init ()
 		// TODO ERROR
 	}
 
+	snd_seq_set_client_name(sc.seq_handle, "audacious");
+	sc.client_port = snd_seq_create_simple_port(sc.seq_handle,
+	                                            "midi_out",
+	                                            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+	                                            SND_SEQ_PORT_TYPE_APPLICATION);
+
 	// TODO make configurable:
 	sc.dest_client = 36;
 	sc.dest_port = 0;
 	AUDWARN("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
-	if ((res = snd_seq_connect_to(sc.seq_handle, snd_seq_client_id(sc.seq_handle), sc.dest_client, sc.dest_port)))
+	if ((res = snd_seq_connect_to(sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port)))
 	{
 		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client, sc.dest_port);
 	}
@@ -89,6 +96,9 @@ void backend_cleanup ()
 	int res;
 	if (!sc.seq_handle)
 		return;
+
+	snd_seq_delete_simple_port(sc.seq_handle, sc.client_port);
+	
 	if ((res = snd_seq_close(sc.seq_handle)))
 	{
 		AUDWARN("Could not close alsa sequencer\n");
