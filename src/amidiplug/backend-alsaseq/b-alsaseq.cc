@@ -72,7 +72,6 @@ static sequencer_client_t sc;
 		/*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */ \
 	} else \
 		AUDWARN("Could not encode midi message: %s\n", snd_strerror(err)); \
-	exit(0); \
 	} while (0)
 
 /* options */
