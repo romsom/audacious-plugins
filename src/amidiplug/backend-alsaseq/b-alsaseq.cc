@@ -150,7 +150,7 @@ void backend_init ()
 	                                            SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
 
 	// TODO make configurable using snd_seq_parse_address()
-	sc.dest_client = 36;
+	sc.dest_client = 28;
 	sc.dest_port = 0;
 	AUDINFO("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
 	CHK(res, "", snd_seq_connect_to, sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port);
