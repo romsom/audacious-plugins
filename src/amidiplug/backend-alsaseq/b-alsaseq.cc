@@ -185,10 +185,9 @@ void backend_reset ()
 void seq_event_noteon (midievent_t * event)
 {
 	int err;
-	// HANDLE_EVENT(err, event, 3);
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_noteon(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
-	PRINT_EVENT(event, 3);
+	// PRINT_EVENT(event, 3);
 	SEND_EVENT(err);
 }
 
@@ -196,10 +195,9 @@ void seq_event_noteon (midievent_t * event)
 void seq_event_noteoff (midievent_t * event)
 {
 	int err;
-	// HANDLE_EVENT(err, event, 2);
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_noteoff(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
-	PRINT_EVENT(event, 3);
+	// PRINT_EVENT(event, 3);
 	SEND_EVENT(err);
 }
 
@@ -214,14 +212,18 @@ void seq_event_keypress (midievent_t * event)
 void seq_event_controller (midievent_t * event)
 {
 	int err;
-	// HANDLE_EVENT(err, event, 3);
+	PREPARE_EVENT(err);
+	snd_seq_ev_set_controller(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
+	SEND_EVENT(err);
 }
 
 
 void seq_event_pgmchange (midievent_t * event)
 {
 	int err;
-	// HANDLE_EVENT(err, event, 2);
+	PREPARE_EVENT(err);
+	snd_seq_ev_set_pgmchange(&sc.event, event->d[0] & 0xf, event->d[1]);
+	SEND_EVENT(err);
 }
 
 
