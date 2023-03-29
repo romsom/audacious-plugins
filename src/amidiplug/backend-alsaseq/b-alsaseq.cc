@@ -61,7 +61,7 @@ typedef struct
 		snd_seq_ev_set_direct(&sc.event); \
 		CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event); \
 		CHK(err, "", snd_seq_drain_output, sc.seq_handle); \
-		CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); \
+		/*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */ \
 	} else \
 		AUDWARN("Could not encode midi message: %s\n", snd_strerror(err)); \
 	exit(0); \
