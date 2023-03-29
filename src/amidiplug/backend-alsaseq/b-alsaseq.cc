@@ -24,7 +24,7 @@
 #include <alsa/seq_event.h>
 #include <alsa/seq_midi_event.h>
 #include <alsa/seqmid.h>
-#include <cstdint>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -119,6 +119,23 @@ uint8_t note_map[16][128];
 
 /* options */
 
+void connect_client ()
+{
+	int res;
+	if (!sc.seq_handle)
+		return;
+
+    // TODO make configurable using snd_seq_parse_address()
+	sc.dest_client = 28;
+	sc.dest_port = 0;
+	AUDINFO("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
+	CHK(res, "", snd_seq_connect_to, sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port);
+	if (res)
+	{
+		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client, sc.dest_port);
+	}
+}
+
 void backend_init ()
 {
 	// clear note map
@@ -144,16 +161,7 @@ void backend_init ()
 	                                            "midi_out",
 	                                            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
 	                                            SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
-
-	// TODO make configurable using snd_seq_parse_address()
-	sc.dest_client = 28;
-	sc.dest_port = 0;
-	AUDINFO("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
-	CHK(res, "", snd_seq_connect_to, sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port);
-	if (res)
-	{
-		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client, sc.dest_port);
-	}
+	connect_client();
 }
 
 
@@ -168,6 +176,8 @@ void backend_cleanup ()
 	CHK(res, "Could not close alsa sequencer", snd_seq_close, sc.seq_handle);
 	if (sc.event_parser)
 		snd_midi_event_free(sc.event_parser);
+
+	connect_client();
 }
 
 
