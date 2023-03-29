@@ -72,20 +72,20 @@ static sequencer_client_t sc;
         switch (length)                                                        \
         {                                                                      \
         case 1:                                                                \
-            AUDWARN("Audacious Event: %d\n", event->d[0]);                     \
+            AUDWARN("Audacious Event: %x\n", event->d[0]);                     \
             break;                                                             \
         case 2:                                                                \
-            AUDWARN("Audacious Event: %d, %d\n", event->d[0], event->d[1]);    \
+            AUDWARN("Audacious Event: %x, %x\n", event->d[0], event->d[1]);    \
             break;                                                             \
         case 3:                                                                \
-            AUDWARN("Audacious Event: %d, %d, %d\n", event->d[0], event->d[1], \
+            AUDWARN("Audacious Event: %x, %x, %x\n", event->d[0], event->d[1], \
                     event->d[2]);                                              \
             break;                                                             \
         default:                                                               \
             break;                                                             \
         }                                                                      \
         AUDWARN(                                                               \
-            "ALSA Event: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",    \
+            "ALSA Event: %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x\n",    \
             sc.event.data.raw8.d[0], sc.event.data.raw8.d[1],                  \
             sc.event.data.raw8.d[2], sc.event.data.raw8.d[3],                  \
             sc.event.data.raw8.d[4], sc.event.data.raw8.d[5],                  \
