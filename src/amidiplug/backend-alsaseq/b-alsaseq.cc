@@ -130,9 +130,11 @@ void connect_client ()
 	sc.dest_port = 0;
 	AUDINFO("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
 	res = snd_seq_connect_to(sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port);
-	if (res < 0 && res)
+
+    // exclude error code for already connected port
+	if (res < 0 && res != -EBUSY)
 	{
-		AUDWARN("Errorcode: %d\n", res);
+		AUDWARN("snd_seq_connect_to: %s", snd_strerror(res));
 		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client, sc.dest_port);
 	}
 }
