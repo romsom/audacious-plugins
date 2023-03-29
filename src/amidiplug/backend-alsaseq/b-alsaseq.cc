@@ -110,26 +110,6 @@ static sequencer_client_t sc;
     } while (0)
 
 
-
-
-#define HANDLE_EVENT(err, event, length)                                       \
-    do                                                                         \
-    {                                                                          \
-        PREPARE_EVENT(err);                                                    \
-        snd_midi_event_init(sc.event_parser);                                  \
-        if ((err = snd_midi_event_encode(sc.event_parser, (event)->d,          \
-                                         (length), &(sc.event))) > 0)          \
-        {                                                                      \
-            AUDWARN("Encode result: %d\n", err);                               \
-            SEND_EVENT(err, event, length);                                    \
-            PRINT_EVENT(event, length);                                        \
-            /*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */       \
-        }                                                                      \
-        else                                                                   \
-            AUDWARN("Could not encode midi message: %s\n", snd_strerror(err)); \
-    } while (0)
-
-
 /* options */
 
 void backend_init ()
@@ -244,10 +224,10 @@ void seq_event_chanpress (midievent_t * event)
 
 void seq_event_pitchbend (midievent_t * event)
 {
-    // int pb_value = (( (event->d[2]) & 0x7f) << 7) | ((event->d[1]) & 0x7f);
-    // fluid_synth_pitch_bend (sc.synth,
-    //                         event->d[0],
-    //                         pb_value);
+	int err;
+	PREPARE_EVENT(err);
+	snd_seq_ev_set_pitchbend(&sc.event, event->d[0] & 0xf, event->d[1]);
+	SEND_EVENT(err, event, 2);
 }
 
 
