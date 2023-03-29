@@ -57,8 +57,11 @@ typedef struct
 	if (!sc.seq_handle) \
 		return; \
 	snd_midi_event_init(sc.event_parser); \
+	snd_seq_ev_clear(&sc.event); \
+	snd_seq_ev_set_source(&sc.event, sc.client_port); \
+	snd_seq_ev_set_subs(&sc.event); \
+	snd_seq_ev_set_direct(&sc.event); \
 	if ((err = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
-		snd_seq_ev_set_direct(&sc.event); \
 		CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event); \
 		CHK(err, "", snd_seq_drain_output, sc.seq_handle); \
 		/*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */ \
