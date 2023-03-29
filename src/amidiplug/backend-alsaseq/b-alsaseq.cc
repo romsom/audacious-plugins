@@ -64,7 +64,7 @@ static sequencer_client_t sc;
 	snd_seq_ev_set_source(&sc.event, sc.client_port); \
 	snd_seq_ev_set_subs(&sc.event); \
 	snd_seq_ev_set_direct(&sc.event); \
-	if ((err = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
+	if ((err = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event)) > 0) { \
 		AUDWARN("Audacious Event: %d, %d, %d\n", event->d[0], event->d[1], event->d[2]); \
 		AUDWARN("ALSA Event: %d, %d, %d,  %d, %d, %d,  %d, %d, %d,  %d, %d, %d\n", \
 		        sc.event.data.raw8.d[0], \
