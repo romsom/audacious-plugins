@@ -47,6 +47,9 @@ typedef struct
 	int dest_port;
 } sequencer_client_t;
 
+/* sequencer instance */
+static sequencer_client_t sc;
+
 #define CHK(err, prefix, fun, params...)	  \
 	err = fun(params); \
 	if (err) \
@@ -62,6 +65,8 @@ typedef struct
 	snd_seq_ev_set_subs(&sc.event); \
 	snd_seq_ev_set_direct(&sc.event); \
 	if ((err = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
+		AUDWARN("Audacious Event: %d, %d, %d\n", event->d[0], event->d[1], event->d[2]); \
+		AUDWARN("ALSA Event: %d, %d, %d\n", sc.event.data.raw8.d[0], sc.event.data.raw8.d[1], sc.event.data.raw8.d[2]); \
 		CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event); \
 		CHK(err, "", snd_seq_drain_output, sc.seq_handle); \
 		/*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */ \
@@ -70,8 +75,6 @@ typedef struct
 	exit(0); \
 	} while (0)
 
-/* sequencer instance */
-static sequencer_client_t sc;
 /* options */
 
 void backend_init ()
