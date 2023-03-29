@@ -192,8 +192,7 @@ void seq_event_noteoff (midievent_t * event)
 
 void seq_event_keypress (midievent_t * event)
 {
-    /* KEY PRESSURE events are not handled by FluidSynth sequencer? */
-    AUDDBG ("KEYPRESS EVENT with FluidSynth backend (unhandled)\n");
+    AUDWARN("Poly Aftertouch not implemented yet\n");
 }
 
 
@@ -218,7 +217,7 @@ void seq_event_pgmchange (midievent_t * event)
 void seq_event_chanpress (midievent_t * event)
 {
     /* CHANNEL PRESSURE events are not handled by FluidSynth sequencer? */
-    AUDDBG ("CHANPRESS EVENT with FluidSynth backend (unhandled)\n");
+    AUDWARN("Mono Aftertouch not implemented yet\n");
 }
 
 
@@ -233,24 +232,27 @@ void seq_event_pitchbend (midievent_t * event)
 
 void seq_event_sysex (midievent_t * event)
 {
-    AUDDBG ("SYSEX EVENT with FluidSynth backend (unhandled)\n");
+    AUDWARN("SYSEX not implemented yet\n");
 }
 
 
 void seq_event_tempo (midievent_t * event)
 {
     /* unhandled */
+    AUDWARN("Tempo not implemented yet\n");
 }
 
 
 void seq_event_other (midievent_t * event)
 {
     /* unhandled */
+    AUDWARN("Unspecified MIDI event not implemented yet\n");
 }
 
 
 void seq_event_allnoteoff (int unused)
 {
+    AUDWARN("AllNoteOff not implemented yet\n");
     // int c = 0;
 
     // for (c = 0 ; c < 16 ; c++)
