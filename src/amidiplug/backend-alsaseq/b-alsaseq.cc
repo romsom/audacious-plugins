@@ -176,8 +176,6 @@ void backend_cleanup ()
 	CHK(res, "Could not close alsa sequencer", snd_seq_close, sc.seq_handle);
 	if (sc.event_parser)
 		snd_midi_event_free(sc.event_parser);
-
-	connect_client();
 }
 
 
@@ -185,6 +183,8 @@ void backend_reset ()
 {
 	if (!sc.seq_handle)
 		return;
+
+	connect_client();
 
 	// clear all remaining notes
 	int err;
