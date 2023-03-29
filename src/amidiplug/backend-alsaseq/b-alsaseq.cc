@@ -66,13 +66,6 @@ static sequencer_client_t sc;
         snd_seq_ev_set_direct(&sc.event);                                      \
     } while (0)
 
-#define SEND_EVENT(err)                                                        \
-    do                                                                         \
-    {                                                                          \
-        CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event);   \
-        /* CHK(err, "", snd_seq_drain_output, sc.seq_handle); */               \
-    } while (0)
-
 #define PRINT_EVENT(event, length)                                             \
     do                                                                         \
     {                                                                          \
@@ -101,8 +94,20 @@ static sequencer_client_t sc;
             sc.event.data.raw8.d[10], sc.event.data.raw8.d[11]);               \
     } while (0)
 
-	      
-	      
+
+#define SEND_EVENT(err, event, length)                                         \
+    do                                                                         \
+    {                                                                          \
+        CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event);   \
+        if (err)                                                               \
+        {                                                                      \
+            PRINT_EVENT(event, length);                                        \
+        }                                                                      \
+        /* CHK(err, "", snd_seq_drain_output, sc.seq_handle); */               \
+    } while (0)
+
+
+
 
 #define HANDLE_EVENT(err, event, length)                                       \
     do                                                                         \
@@ -113,7 +118,7 @@ static sequencer_client_t sc;
                                          (length), &(sc.event))) > 0)          \
         {                                                                      \
             AUDWARN("Encode result: %d\n", err);                               \
-            SEND_EVENT(err);                                                   \
+            SEND_EVENT(err, event, length);                                    \
             PRINT_EVENT(event, length);                                        \
             /*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */       \
         }                                                                      \
@@ -188,7 +193,7 @@ void seq_event_noteon (midievent_t * event)
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_noteon(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
 	// PRINT_EVENT(event, 3);
-	SEND_EVENT(err);
+	SEND_EVENT(err, event, 3);
 }
 
 
@@ -198,7 +203,7 @@ void seq_event_noteoff (midievent_t * event)
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_noteoff(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
 	// PRINT_EVENT(event, 3);
-	SEND_EVENT(err);
+	SEND_EVENT(err, event, 2);
 }
 
 
@@ -214,7 +219,7 @@ void seq_event_controller (midievent_t * event)
 	int err;
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_controller(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
-	SEND_EVENT(err);
+	SEND_EVENT(err, event, 3);
 }
 
 
@@ -223,7 +228,7 @@ void seq_event_pgmchange (midievent_t * event)
 	int err;
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_pgmchange(&sc.event, event->d[0] & 0xf, event->d[1]);
-	SEND_EVENT(err);
+	SEND_EVENT(err, event, 2);
 }
 
 
