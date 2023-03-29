@@ -264,6 +264,7 @@ void seq_event_allnoteoff (int unused)
 
 void backend_generate_audio (void * buf, int bufsize)
 {
+	// write dummy audio
 	memset(buf, 0, bufsize);
 }
 
