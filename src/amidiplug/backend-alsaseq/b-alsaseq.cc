@@ -47,10 +47,10 @@ typedef struct
 	int dest_port;
 } sequencer_client_t;
 
-#define CHK(err, fun, params...) \
+#define CHK(err, prefix, fun, params...)	  \
 	err = fun(params); \
 	if (err) \
-		AUDWARN(#fun ": %s\n", snd_strerror(err));
+		AUDWARN(prefix ": " #fun ": %s\n", snd_strerror(err))
 
 #define HANDLE_EVENT(err, event, length)	  \
 	do { \
@@ -59,9 +59,9 @@ typedef struct
 	snd_midi_event_init(sc.event_parser); \
 	if ((err = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event) > 0)) { \
 		snd_seq_ev_set_direct(&sc.event); \
-		CHK(err, snd_seq_event_output_direct, sc.seq_handle, &sc.event); \
-		CHK(err, snd_seq_drain_output, sc.seq_handle); \
-		CHK(err, snd_seq_sync_output_queue, sc.seq_handle); \
+		CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event); \
+		CHK(err, "", snd_seq_drain_output, sc.seq_handle); \
+		CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); \
 	} else \
 		AUDWARN("Could not encode midi message: %s\n", snd_strerror(err)); \
 	exit(0); \
@@ -74,18 +74,21 @@ static sequencer_client_t sc;
 void backend_init ()
 {
 	int res;
-	if ((res = snd_seq_open(&sc.seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0)))
+	CHK(res, "Could not open alsa sequencer", snd_seq_open, &sc.seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0);
+	if (res)
 	{
 		sc.seq_handle = NULL;
-		AUDWARN("Could not open alsa sequencer\n");
 		// TODO ERROR
 	}
-	if ((res = snd_midi_event_new(1024, &sc.event_parser)))
+	CHK(res,"Could not initialize alsa midi event parser", snd_midi_event_new, 1024, &sc.event_parser);
+	if (res)
 	{
 		sc.event_parser = NULL;
-		AUDWARN("Could not initialize alsa midi event parser\n");
 		// TODO ERROR
 	}
+
+	// setup queue
+	
 
 	snd_seq_set_client_name(sc.seq_handle, "audacious");
 	sc.client_port = snd_seq_create_simple_port(sc.seq_handle,
@@ -96,8 +99,9 @@ void backend_init ()
 	// TODO make configurable using snd_seq_parse_address()
 	sc.dest_client = 36;
 	sc.dest_port = 0;
-	AUDWARN("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
-	if ((res = snd_seq_connect_to(sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port)))
+	AUDINFO("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
+	CHK(res, "", snd_seq_connect_to, sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port);
+	if (res)
 	{
 		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client, sc.dest_port);
 	}
@@ -112,11 +116,7 @@ void backend_cleanup ()
 
 	snd_seq_delete_simple_port(sc.seq_handle, sc.client_port);
 	
-	if ((res = snd_seq_close(sc.seq_handle)))
-	{
-		AUDWARN("Could not close alsa sequencer\n");
-		// TODO ERROR
-	}
+	CHK(res, "Could not close alsa sequencer", snd_seq_close, sc.seq_handle);
 	if (sc.event_parser)
 		snd_midi_event_free(sc.event_parser);
 }
