@@ -50,10 +50,13 @@ typedef struct
 /* sequencer instance */
 static sequencer_client_t sc;
 
-#define CHK(err, prefix, fun, params...)	  \
-	err = fun(params); \
-	if (err) \
-		AUDWARN(prefix ": " #fun ": %s\n", snd_strerror(err))
+#define CHK(err, prefix, fun, params...)                                       \
+    do                                                                         \
+    {                                                                          \
+        err = fun(params);                                                     \
+        if (err < 0)                                                           \
+            AUDWARN(prefix ": " #fun ": %s\n", snd_strerror(err));             \
+    } while (0)
 
 #define PREPARE_EVENT(err)                                                     \
     do                                                                         \
@@ -99,7 +102,7 @@ static sequencer_client_t sc;
     do                                                                         \
     {                                                                          \
         CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event);   \
-        if (err)                                                               \
+        if (err < 0)                                                           \
         {                                                                      \
             PRINT_EVENT(event, length);                                        \
         }                                                                      \
