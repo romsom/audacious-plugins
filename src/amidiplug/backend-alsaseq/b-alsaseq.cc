@@ -55,37 +55,72 @@ static sequencer_client_t sc;
 	if (err) \
 		AUDWARN(prefix ": " #fun ": %s\n", snd_strerror(err))
 
-#define HANDLE_EVENT(err, event, length)	  \
-	do { \
-	if (!sc.seq_handle) \
-		return; \
-	snd_midi_event_init(sc.event_parser); \
-	snd_seq_ev_clear(&sc.event); \
-	snd_seq_ev_set_source(&sc.event, sc.client_port); \
-	snd_seq_ev_set_subs(&sc.event); \
-	snd_seq_ev_set_direct(&sc.event); \
-	if ((err = snd_midi_event_encode(sc.event_parser, (event)->d, (length), &sc.event)) > 0) { \
-		AUDWARN("Encode result: %d\n", err); \
-		AUDWARN("Audacious Event: %d, %d, %d\n", event->d[0], event->d[1], event->d[2]); \
-		AUDWARN("ALSA Event: %d, %d, %d,  %d, %d, %d,  %d, %d, %d,  %d, %d, %d\n", \
-		        sc.event.data.raw8.d[0], \
-		        sc.event.data.raw8.d[1], \
-		        sc.event.data.raw8.d[2], \
-		        sc.event.data.raw8.d[3], \
-		        sc.event.data.raw8.d[4], \
-		        sc.event.data.raw8.d[5], \
-		        sc.event.data.raw8.d[6], \
-		        sc.event.data.raw8.d[7], \
-		        sc.event.data.raw8.d[8], \
-		        sc.event.data.raw8.d[9], \
-		        sc.event.data.raw8.d[10], \
-		        sc.event.data.raw8.d[11]); \
-		CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event); \
-		CHK(err, "", snd_seq_drain_output, sc.seq_handle); \
-		/*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */ \
-	} else \
-		AUDWARN("Could not encode midi message: %s\n", snd_strerror(err)); \
-	} while (0)
+#define PREPARE_EVENT(err)                                                     \
+    do                                                                         \
+    {                                                                          \
+        if (!sc.seq_handle)                                                    \
+            return;                                                            \
+        snd_seq_ev_clear(&sc.event);                                           \
+        snd_seq_ev_set_source(&sc.event, sc.client_port);                      \
+        snd_seq_ev_set_subs(&sc.event);                                        \
+        snd_seq_ev_set_direct(&sc.event);                                      \
+    } while (0)
+
+#define SEND_EVENT(err)                                                        \
+    do                                                                         \
+    {                                                                          \
+        CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event);   \
+        /* CHK(err, "", snd_seq_drain_output, sc.seq_handle); */               \
+    } while (0)
+
+#define PRINT_EVENT(event, length)                                             \
+    do                                                                         \
+    {                                                                          \
+        switch (length)                                                        \
+        {                                                                      \
+        case 1:                                                                \
+            AUDWARN("Audacious Event: %d\n", event->d[0]);                     \
+            break;                                                             \
+        case 2:                                                                \
+            AUDWARN("Audacious Event: %d, %d\n", event->d[0], event->d[1]);    \
+            break;                                                             \
+        case 3:                                                                \
+            AUDWARN("Audacious Event: %d, %d, %d\n", event->d[0], event->d[1], \
+                    event->d[2]);                                              \
+            break;                                                             \
+        default:                                                               \
+            break;                                                             \
+        }                                                                      \
+        AUDWARN(                                                               \
+            "ALSA Event: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",    \
+            sc.event.data.raw8.d[0], sc.event.data.raw8.d[1],                  \
+            sc.event.data.raw8.d[2], sc.event.data.raw8.d[3],                  \
+            sc.event.data.raw8.d[4], sc.event.data.raw8.d[5],                  \
+            sc.event.data.raw8.d[6], sc.event.data.raw8.d[7],                  \
+            sc.event.data.raw8.d[8], sc.event.data.raw8.d[9],                  \
+            sc.event.data.raw8.d[10], sc.event.data.raw8.d[11]);               \
+    } while (0)
+
+	      
+	      
+
+#define HANDLE_EVENT(err, event, length)                                       \
+    do                                                                         \
+    {                                                                          \
+        PREPARE_EVENT(err);                                                    \
+        snd_midi_event_init(sc.event_parser);                                  \
+        if ((err = snd_midi_event_encode(sc.event_parser, (event)->d,          \
+                                         (length), &(sc.event))) > 0)          \
+        {                                                                      \
+            AUDWARN("Encode result: %d\n", err);                               \
+            SEND_EVENT(err);                                                   \
+            PRINT_EVENT(event, length);                                        \
+            /*CHK(err, "", snd_seq_sync_output_queue, sc.seq_handle); */       \
+        }                                                                      \
+        else                                                                   \
+            AUDWARN("Could not encode midi message: %s\n", snd_strerror(err)); \
+    } while (0)
+
 
 /* options */
 
@@ -150,14 +185,20 @@ void backend_reset ()
 void seq_event_noteon (midievent_t * event)
 {
 	int err;
-	HANDLE_EVENT(err, event, 3);
+	// HANDLE_EVENT(err, event, 3);
+	snd_seq_ev_set_noteon(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
+	PRINT_EVENT(event, 3);
+	SEND_EVENT(err);
 }
 
 
 void seq_event_noteoff (midievent_t * event)
 {
 	int err;
-	HANDLE_EVENT(err, event, 2);
+	// HANDLE_EVENT(err, event, 2);
+	snd_seq_ev_set_noteoff(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
+	PRINT_EVENT(event, 3);
+	SEND_EVENT(err);
 }
 
 
@@ -171,14 +212,14 @@ void seq_event_keypress (midievent_t * event)
 void seq_event_controller (midievent_t * event)
 {
 	int err;
-	HANDLE_EVENT(err, event, 3);
+	// HANDLE_EVENT(err, event, 3);
 }
 
 
 void seq_event_pgmchange (midievent_t * event)
 {
 	int err;
-	HANDLE_EVENT(err, event, 2);
+	// HANDLE_EVENT(err, event, 2);
 }
 
 
