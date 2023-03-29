@@ -24,6 +24,7 @@
 #include <alsa/seq_event.h>
 #include <alsa/seq_midi_event.h>
 #include <alsa/seqmid.h>
+#include <cstdint>
 #include <stdlib.h>
 #include <string.h>
 
@@ -50,6 +51,8 @@ typedef struct
 /* sequencer instance */
 static sequencer_client_t sc;
 
+uint8_t note_map[16][128];
+
 #define CHK(err, prefix, fun, params...)                                       \
     do                                                                         \
     {                                                                          \
@@ -69,23 +72,26 @@ static sequencer_client_t sc;
         snd_seq_ev_set_direct(&sc.event);                                      \
     } while (0)
 
-#define PRINT_EVENT(event, length)                                             \
+#define PRINT_EVENT(ev, length)                                                \
     do                                                                         \
     {                                                                          \
-        switch (length)                                                        \
+        if (ev)                                                                \
         {                                                                      \
-        case 1:                                                                \
-            AUDWARN("Audacious Event: %x\n", event->d[0]);                     \
-            break;                                                             \
-        case 2:                                                                \
-            AUDWARN("Audacious Event: %x, %x\n", event->d[0], event->d[1]);    \
-            break;                                                             \
-        case 3:                                                                \
-            AUDWARN("Audacious Event: %x, %x, %x\n", event->d[0], event->d[1], \
-                    event->d[2]);                                              \
-            break;                                                             \
-        default:                                                               \
-            break;                                                             \
+            switch (length)                                                    \
+            {                                                                  \
+            case 1:                                                            \
+                AUDWARN("Audacious Event: %x\n", ev->d[0]);                    \
+                break;                                                         \
+            case 2:                                                            \
+                AUDWARN("Audacious Event: %x, %x\n", ev->d[0], ev->d[1]);      \
+                break;                                                         \
+            case 3:                                                            \
+                AUDWARN("Audacious Event: %x, %x, %x\n", ev->d[0], ev->d[1],   \
+                        ev->d[2]);                                             \
+                break;                                                         \
+            default:                                                           \
+                break;                                                         \
+            }                                                                  \
         }                                                                      \
         AUDWARN(                                                               \
             "ALSA Event: %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x\n",    \
@@ -98,13 +104,14 @@ static sequencer_client_t sc;
     } while (0)
 
 
-#define SEND_EVENT(err, event, length)                                         \
+
+#define SEND_EVENT(err, ev, length)                                            \
     do                                                                         \
     {                                                                          \
         CHK(err, "", snd_seq_event_output_direct, sc.seq_handle, &sc.event);   \
         if (err < 0)                                                           \
         {                                                                      \
-            PRINT_EVENT(event, length);                                        \
+            PRINT_EVENT(ev, length);                                           \
         }                                                                      \
         /* CHK(err, "", snd_seq_drain_output, sc.seq_handle); */               \
     } while (0)
@@ -114,6 +121,10 @@ static sequencer_client_t sc;
 
 void backend_init ()
 {
+	// clear note map
+	memset(note_map, 0, 16 * 128);
+
+	// setup alsa seq interface
 	int res;
 	CHK(res, "Could not open alsa sequencer", snd_seq_open, &sc.seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0);
 	if (res)
@@ -127,9 +138,6 @@ void backend_init ()
 		sc.event_parser = NULL;
 		// TODO ERROR
 	}
-
-	// setup queue
-	
 
 	snd_seq_set_client_name(sc.seq_handle, "audacious");
 	sc.client_port = snd_seq_create_simple_port(sc.seq_handle,
@@ -167,15 +175,33 @@ void backend_reset ()
 {
 	if (!sc.seq_handle)
 		return;
+
+	// clear all remaining notes
+	int err;
+	midievent_t *dummy = NULL;
+
+	for (int ch=0; ch < 16; ch++) {
+		for (int note=0; note < 128; note++) {
+			while (note_map[ch][note]) {
+				PREPARE_EVENT(err);
+				snd_seq_ev_set_noteoff(&sc.event, ch, note, 0);
+				SEND_EVENT(err, dummy, 0);
+				note_map[ch][note]--;
+			}
+		}
+	}
 }
 
 
 void seq_event_noteon (midievent_t * event)
 {
 	int err;
+	uint8_t ch = event->d[0] & 0xf;
+	uint8_t note = event->d[1];
+	note_map[ch][note]++;
+
 	PREPARE_EVENT(err);
-	snd_seq_ev_set_noteon(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
-	// PRINT_EVENT(event, 3);
+	snd_seq_ev_set_noteon(&sc.event, ch, note, event->d[2]);
 	SEND_EVENT(err, event, 3);
 }
 
@@ -183,6 +209,11 @@ void seq_event_noteon (midievent_t * event)
 void seq_event_noteoff (midievent_t * event)
 {
 	int err;
+	uint8_t ch = event->d[0] & 0xf;
+	uint8_t note = event->d[1];
+	if (note_map[ch][note] > 0)
+		note_map[ch][note]--;
+
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_noteoff(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
 	// PRINT_EVENT(event, 3);
