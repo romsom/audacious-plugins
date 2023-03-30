@@ -138,6 +138,8 @@ static const PreferencesWidget amidiplug_widgets[] = {
         WidgetBool ("amidiplug", "skip_trailing")),
 
     /* backend settings */
+    WidgetEntry(N_("MIDI output device (ALSA Seq)"),
+                WidgetString("amidiplug", "alsa_seq_device")),
     WidgetLabel (N_("<b>SoundFont</b>")),
 #ifdef USE_GTK
     WidgetCustomGTK (create_soundfont_list),
