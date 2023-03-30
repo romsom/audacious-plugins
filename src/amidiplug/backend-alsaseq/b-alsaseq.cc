@@ -129,7 +129,7 @@ void connect_client ()
 	String new_client_name = aud_get_str ("amidiplug", "alsa_seq_device");
 
 	// disconnect from old client
-	if (sc.dest_client_name && strcmp(sc.dest_client_name, new_client_name) != 0) {
+	if (strlen(sc.dest_client_name) > 0 && strcmp(sc.dest_client_name, new_client_name) != 0) {
 		CHK(res, "", snd_seq_disconnect_from, sc.seq_handle, sc.client_port, sc.dest_client_addr.client, sc.dest_client_addr.port);
 	}
 
@@ -171,6 +171,8 @@ void backend_init ()
 	                                            "midi_out",
 	                                            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
 	                                            SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
+
+	sc.dest_client_name = String("");
 	connect_client();
 }
 
