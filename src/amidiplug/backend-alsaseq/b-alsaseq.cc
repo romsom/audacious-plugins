@@ -133,6 +133,8 @@ void connect_client ()
 		CHK(res, "", snd_seq_disconnect_from, sc.seq_handle, sc.client_port, sc.dest_client_addr.client, sc.dest_client_addr.port);
 	}
 
+	sc.dest_client_name = new_client_name;
+
     CHK(res, "Could not find the ALSA Seq client", snd_seq_parse_address, sc.seq_handle, &sc.dest_client_addr, sc.dest_client_name);
     // TODO make configurable using snd_seq_parse_address()
 	AUDINFO("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
