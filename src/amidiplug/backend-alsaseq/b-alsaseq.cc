@@ -283,7 +283,8 @@ void seq_event_pitchbend (midievent_t * event)
 {
 	int err;
 	PREPARE_EVENT(err);
-	int val = ((int)((int8_t)event->d[1])) << 7;
+	int val = (((int)((int8_t)event->d[2])) << 7) + (int)event->d[1];
+	AUDWARN("Raw PB val: %x %x\n", event->d[1], event->d[2]);
 	AUDWARN("PB val: %d\n", val);
 	snd_seq_ev_set_pitchbend(&sc.event, event->d[0] & 0xf, val);
 	PRINT_EVENT(event, 2);
