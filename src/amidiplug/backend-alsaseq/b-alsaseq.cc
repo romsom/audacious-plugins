@@ -283,7 +283,7 @@ void seq_event_pitchbend (midievent_t * event)
 {
 	int err;
 	PREPARE_EVENT(err);
-	snd_seq_ev_set_pitchbend(&sc.event, event->d[0] & 0xf, event->d[1] << 7);
+	snd_seq_ev_set_pitchbend(&sc.event, event->d[0] & 0xf, (((uint32_t)event->d[1]) << 7) - 8192);
 	PRINT_EVENT(event, 2);
 	SEND_EVENT(err, event, 2);
 }
