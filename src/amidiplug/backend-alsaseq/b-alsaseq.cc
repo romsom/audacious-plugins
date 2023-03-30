@@ -130,7 +130,7 @@ void connect_client ()
 
 	// disconnect from old client
 	if (strlen(sc.dest_client_name) > 0 && strcmp(sc.dest_client_name, new_client_name) != 0) {
-		CHK(res, "", snd_seq_disconnect_from, sc.seq_handle, sc.client_port, sc.dest_client_addr.client, sc.dest_client_addr.port);
+		CHK(res, "", snd_seq_disconnect_to, sc.seq_handle, sc.client_port, sc.dest_client_addr.client, sc.dest_client_addr.port);
 	}
 
 	sc.dest_client_name = new_client_name;
