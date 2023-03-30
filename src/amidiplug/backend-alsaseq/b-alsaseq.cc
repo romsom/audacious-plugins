@@ -44,8 +44,8 @@ typedef struct
 	snd_seq_event_t event;
 	snd_midi_event_t *event_parser;
 	int client_port;
-	int dest_client;
-	int dest_port;
+	String dest_client_name;
+	snd_seq_addr_t dest_client_addr;
 } sequencer_client_t;
 
 /* sequencer instance */
@@ -125,17 +125,19 @@ void connect_client ()
 	if (!sc.seq_handle)
 		return;
 
+	
+    sc.dest_client_name = aud_get_str ("amidiplug", "alsa_seq_device");
+
+    CHK(res, "Could not find the ALSA Seq client", snd_seq_parse_address, sc.seq_handle, &sc.dest_client_addr, sc.dest_client_name);
     // TODO make configurable using snd_seq_parse_address()
-	sc.dest_client = 28;
-	sc.dest_port = 0;
 	AUDINFO("Alsa seq device %d\n", snd_seq_client_id(sc.seq_handle));
-	res = snd_seq_connect_to(sc.seq_handle, sc.client_port, sc.dest_client, sc.dest_port);
+	res = snd_seq_connect_to(sc.seq_handle, sc.client_port, sc.dest_client_addr.client, sc.dest_client_addr.port);
 
     // exclude error code for already connected port
 	if (res < 0 && res != -EBUSY)
 	{
 		AUDWARN("snd_seq_connect_to: %s", snd_strerror(res));
-		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client, sc.dest_port);
+		AUDWARN("Could not connect to alsa seq device %d:%d\n", sc.dest_client_addr.client, sc.dest_client_addr.port);
 	}
 }
 
