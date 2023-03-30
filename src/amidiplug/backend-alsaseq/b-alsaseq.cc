@@ -234,7 +234,6 @@ void seq_event_noteoff (midievent_t * event)
 
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_noteoff(&sc.event, event->d[0] & 0xf, event->d[1], event->d[2]);
-	// PRINT_EVENT(event, 3);
 	SEND_EVENT(err, event, 2);
 
 
@@ -285,7 +284,6 @@ void seq_event_pitchbend (midievent_t * event)
 	PREPARE_EVENT(err);
 	int val = ((int)(event->d[2]) << 7) + (int)event->d[1] - 8192;
 	snd_seq_ev_set_pitchbend(&sc.event, event->d[0] & 0xf, val);
-	PRINT_EVENT(event, 2);
 	SEND_EVENT(err, event, 2);
 }
 
