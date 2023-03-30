@@ -131,8 +131,8 @@ void connect_client ()
 	// disconnect from old client
 	if (strlen(sc.dest_client_name) > 0 && strcmp(sc.dest_client_name, new_client_name) != 0) {
 		CHK(res, "", snd_seq_disconnect_to, sc.seq_handle, sc.client_port, sc.dest_client_addr.client, sc.dest_client_addr.port);
-		sc.dest_client_name = new_client_name;
 	}
+	sc.dest_client_name = new_client_name;
 
 	// lookup client
     CHK(res, "Could not find the ALSA Seq client", snd_seq_parse_address, sc.seq_handle, &sc.dest_client_addr, sc.dest_client_name);
