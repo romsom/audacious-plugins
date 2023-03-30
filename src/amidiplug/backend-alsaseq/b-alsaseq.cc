@@ -216,7 +216,9 @@ void seq_event_noteon (midievent_t * event)
 	// That way if another thread calls backend_reset() it will always clear all
 	// active notes. Sending an erraneous note-off, if we get intercepted before
 	// actually sending the note is totally fine.
-	note_map[ch][note]++;
+	uint8_t old_count = note_map[ch][note];
+	if (__sync_val_compare_and_swap(& note_map[ch][note], old_count, old_count + 1) == old_count)
+		return;
 
 	PREPARE_EVENT(err);
 	snd_seq_ev_set_noteon(&sc.event, ch, note, event->d[2]);
@@ -235,13 +237,13 @@ void seq_event_noteoff (midievent_t * event)
 	// PRINT_EVENT(event, 3);
 	SEND_EVENT(err, event, 2);
 
-	uint8_t old_count = note_map[ch][note];
 
     // Update the note-counter only if no other thread has modified (i.e. reset)
 	// the value. If we don't decrement an erraneous note-off will be sent,
 	// otherwise the note-counter might underflow and the next note-on for the
 	// same combination of channel and note would overflow it back to 0 and
 	// therefore be missed when clearing all notes.
+	uint8_t old_count = note_map[ch][note];
 	__sync_val_compare_and_swap(& note_map[ch][note], old_count, old_count - 1);
 }
 
