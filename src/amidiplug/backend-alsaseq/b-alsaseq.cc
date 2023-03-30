@@ -198,8 +198,6 @@ void backend_reset ()
 	if (!sc.seq_handle)
 		return;
 
-	connect_client();
-
 	// clear all remaining notes
 	int err;
 	midievent_t *dummy = NULL;
@@ -214,6 +212,8 @@ void backend_reset ()
 			}
 		}
 	}
+
+	connect_client();
 }
 
 
