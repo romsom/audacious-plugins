@@ -217,7 +217,7 @@ void seq_event_noteon (midievent_t * event)
 	// active notes. Sending an erraneous note-off, if we get intercepted before
 	// actually sending the note is totally fine.
 	uint8_t old_count = note_map[ch][note];
-	if (__sync_val_compare_and_swap(& note_map[ch][note], old_count, old_count + 1) == old_count)
+	if (__sync_val_compare_and_swap(& note_map[ch][note], old_count, old_count + 1) != old_count)
 		return;
 
 	PREPARE_EVENT(err);
